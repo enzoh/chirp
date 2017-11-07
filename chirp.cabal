@@ -74,6 +74,8 @@ executable chirp
     Config
     Log
     Message
+    Metric
+    Monitor
     Orphan
     Seed
     UI

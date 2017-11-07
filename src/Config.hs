@@ -7,6 +7,7 @@ import Foreign.C.Revolver            (RevolverId)
 import System.Logger                 (Level)
 
 import Message
+import Metric
 
 data Config =
   Config
@@ -14,6 +15,7 @@ data Config =
   , cfgInbound   :: Chan Message
   , cfgInterface :: RevolverId
   , cfgLogs      :: TQueue (Level, String)
+  , cfgMetrics   :: TQueue Metric
   , cfgOutbound  :: TQueue Message
   }
 

@@ -3,6 +3,7 @@ module Main where
 import Control.Concurrent.Chan       (newChan, writeChan)
 import Control.Concurrent.STM.TQueue (newTQueueIO)
 import Control.Exception             (bracket)
+import Control.Monad                 (unless)
 import Control.Monad.Base            (MonadBase(..))
 import Control.Monad.Reader          (MonadReader(..))
 import Control.Monad.Trans.Resource  (runResourceT)
@@ -20,18 +21,21 @@ import Conduit
 import Config
 import Log
 import Message
+import Monitor
 import Seed
 import UI
 
 data Options =
   Options
-  { p2p_port   :: Word16
-  , seed_nodes :: String
-  , ui_port    :: Word16
+  { disable_monitor :: Bool
+  , disable_ui      :: Bool
+  , p2p_port        :: Word16
+  , seed_nodes      :: String
+  , ui_port         :: Word16
   } deriving Data
 
 instance Default Options where
-  def = Options 4000 "" 4001
+  def = Options False False 4000 "" 4001
 
 main :: IO ()
 main = do
@@ -43,14 +47,16 @@ main = do
   bracket network shutdown $ \ interface -> do
     addrs <- addresses interface
     id <- identity interface
-    logs <- newTQueueIO
     inbound <- newChan
+    logs <- newTQueueIO
+    metrics <- newTQueueIO
     outbound <- newTQueueIO
     let addresses = flip map addrs $ \ addr -> addr </> "ipfs" </> id
-    let config = Config addresses inbound interface logs outbound
+    let config = Config addresses inbound interface logs metrics outbound
     runConfigT config $ runResourceT $ do
       runLogger
-      runUI ui_port
+      unless disable_monitor runMonitor
+      unless disable_ui $ runUI ui_port
       runConduit conduit
 
 bootstrap
