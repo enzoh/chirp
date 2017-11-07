@@ -1,0 +1,19 @@
+build:
+  copy-bins: true
+extra-deps:
+- RFC1751-0.3.1.0
+extra-include-dirs:
+- /usr/local/include
+extra-lib-dirs:
+- /usr/local/lib
+packages:
+- .
+- location:
+    git: https://github.com/dfinity/hs-revolver
+    commit: 9dd13ea5ffa1de0bf85b8b11b56ac9ac5dc42f99
+  extra-dep: true
+- location:
+    git: https://github.com/haskoin/secp256k1-haskell
+    commit: c9b0b15adc3dc7436f90300c54632a458afc4913
+  extra-dep: true
+resolver: nightly-2017-10-31
