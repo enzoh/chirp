@@ -17,7 +17,8 @@ import Foreign.C.Revolver                  (peers, streams)
 import Data.Word                           (Word16)
 import Network.Wai                         (StreamingBody)
 import Network.Wai.EventSource.EventStream (ServerEvent(..), eventToBuilder)
-import Web.Scotty.Trans                    (ScottyT, get, json, jsonData, post, scottyT, setHeader, stream)
+import Prelude hiding                      (log)
+import Web.Scotty.Trans                    (ActionT, ScottyT, get, json, jsonData, post, request, scottyT, setHeader, stream)
 
 import Config
 import Log
@@ -40,34 +41,30 @@ app
   => ScottyT Text m ()
 app = do
 
-  get "/addresses" $ do
-    writeLog Debug "GET /addresses"
+  get "/addresses" $ log $ do
     Config {..} <- ask
     json $ cfgAddresses
 
-  get "/messages" $ do
-    writeLog Debug "GET /messages"
+  get "/messages" $ log $ do
     Config {..} <- ask
     messages <- liftBase $ dupChan cfgInbound
     setHeader "Content-Type" "text/event-stream"
     stream $ sse messages
 
-  get "/peers" $ do
-    writeLog Debug "GET /peers"
+  get "/peers" $ log $ do
     Config {..} <- ask
     count <- liftBase $ peers cfgInterface
     json $ pred count
 
-  get "/streams" $ do
-    writeLog Debug "GET /streams"
+  get "/streams" $ log $ do
     Config {..} <- ask
     count <- liftBase $ streams cfgInterface
     json count
 
-  post "/message" $ do
-    writeLog Debug "POST /message"
+  post "/message" $ log $ do
     Config {..} <- ask
     message <- jsonData
+    writeLog Debug $ show message
     liftBase $ atomically $ writeTQueue cfgOutbound message
 
 sse
@@ -79,3 +76,13 @@ sse chan send flush = fix $ \ loop -> do
   case eventToBuilder $ ServerEvent Nothing Nothing [builder] of
     Nothing -> pure ()
     Just chunk -> send chunk >> flush >> loop
+
+log
+  :: MonadBase IO m
+  => MonadReader Config m
+  => ActionT Text m ()
+  -> ActionT Text m ()
+log action = do
+  req <- request
+  writeLog Debug $ show req
+  action
