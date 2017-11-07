@@ -8,8 +8,12 @@ import Control.Monad.State.Strict   (MonadState(..), StateT(..))
 import Control.Monad.Trans.Class    (MonadTrans(..))
 import Control.Monad.Trans.Control  (ComposeSt, MonadBaseControl(..), MonadTransControl)
 import Control.Monad.Trans.Resource (MonadResource)
+import Data.Default.Class           (Default(..))
 
 data World = World
+
+instance Default World where
+  def = World
 
 newtype WorldT m a = WorldT { getWorldT :: StateT World m a }
   deriving (Applicative, Functor, Monad, MonadIO, MonadResource, MonadThrow, MonadTrans, MonadTransControl)
