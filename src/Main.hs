@@ -3,7 +3,7 @@ module Main where
 import Control.Concurrent.Chan       (newChan, writeChan)
 import Control.Concurrent.STM.TQueue (newTQueueIO)
 import Control.Exception             (bracket)
-import Control.Monad                 (unless)
+import Control.Monad                 (unless, void)
 import Control.Monad.Base            (MonadBase(..))
 import Control.Monad.Reader          (MonadReader(..))
 import Control.Monad.Trans.Resource  (runResourceT)
@@ -24,6 +24,7 @@ import Message
 import Monitor
 import Seed
 import UI
+import World
 
 data Options =
   Options
@@ -57,7 +58,7 @@ main = do
       runLogger
       unless disable_monitor runMonitor
       unless disable_ui $ runUI ui_port
-      runConduit conduit
+      void $ runWorldT World $ runConduit conduit
 
 bootstrap
   :: Word16

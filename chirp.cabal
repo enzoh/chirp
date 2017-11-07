@@ -27,6 +27,7 @@ executable chirp
     data-default-class,
     directory,
     entropy,
+    exceptions,
     filepath,
     monad-control,
     mtl,
@@ -48,12 +49,14 @@ executable chirp
     DeriveGeneric
     FlexibleContexts
     FlexibleInstances
+    GeneralizedNewtypeDeriving
     LambdaCase
     MultiParamTypeClasses
     OverloadedStrings
     RankNTypes
     RecordWildCards
     TupleSections
+    TypeFamilies
     UndecidableInstances
   default-language:
     Haskell2010
@@ -79,3 +82,4 @@ executable chirp
     Orphan
     Seed
     UI
+    World
